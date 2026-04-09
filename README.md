@@ -1,6 +1,6 @@
-# Economic Regime Detection and Factor Timing
+# Regime Detection and Factor Timing
 
-A systematic, non-parametric framework for identifying the current macroeconomic regime and using that information to time equity factor premia.
+A non-parametric framework for identifying the current macroeconomic regime and using that information to time equity factor premia.
 
 ---
 
@@ -52,19 +52,6 @@ d(T, i) = sqrt( sum_v (z_{T,v} - z_{i,v})^2 )
 
 Six Fama-French / Carhart factors from Ken French's data library:
 `Mkt-RF`, `SMB`, `HML`, `RMW`, `CMA`, `Mom`
-
----
-
-## Results (1985–2024)
-
-| Portfolio | Sharpe | Ann. Return | Ann. Vol | Max DD | % Positive Years |
-|-----------|--------|-------------|----------|--------|-----------------|
-| Q1 (most similar) | 0.87 | 3.6% | 4.1% | −9.9% | 80% |
-| Q5 (most dissimilar) | 0.43 | 2.2% | 5.0% | −28.7% | 63% |
-| Spread (Q1 − Q5) | 0.32 | 1.4% | 4.5% | −19.7% | 53% |
-| Long-only benchmark | 0.96 | 4.0% | 4.1% | −12.4% | 80% |
-
-Spread alpha vs. long-only: **1.17% p.a.** (t-stat 1.60), beta **0.06**.
 
 ---
 
