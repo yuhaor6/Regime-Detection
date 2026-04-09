@@ -369,23 +369,20 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     # Abstract
     story.append(Paragraph("Abstract", S["abstract_head"]))
     abstract_text = (
-        "This paper proposes a systematic, non-parametric method for detecting the current "
-        "economic regime and demonstrates how this information can be exploited to time equity "
-        "factor premia. Rather than presupposing a fixed set of discrete regimes, the method "
-        "relies on a set of economic state variables and identifies which historical periods "
-        "were most similar to the present. Similarity is measured via the Euclidean distance "
-        "across standardised transformations of seven financial variables: the equity market "
-        "level, the yield curve slope, crude oil prices, copper prices, short-term interest "
-        "rates, equity volatility, and the stock-bond correlation. The approach is largely "
-        "non-parametric — no parameters are optimised — relying solely on z-scores computed "
-        "over rolling ten-year windows. We apply the methodology to six canonical long-short "
-        "equity factors over the period 1985–2024. Portfolios formed on the most historically "
-        "similar regimes outperform those formed on the most dissimilar regimes, with the "
-        "spread between the two delivering a positive and economically meaningful Sharpe ratio. "
-        "Importantly, we also find that dissimilar historical periods — which we term "
-        "<i>anti-regimes</i> — contain incremental predictive information: returns following "
-        "anti-regime conditions tend to reverse relative to returns following similar conditions. "
-        "Results are robust to different quantile cutoffs and lookback window lengths."
+        "This paper proposes a non-parametric method for detecting the current economic regime "
+        "and using that information to time equity factor premia. Rather than imposing a fixed "
+        "set of discrete regimes, the approach identifies which historical periods most closely "
+        "resemble the present by computing Euclidean distances across standardised transformations "
+        "of seven financial state variables: the equity market level, yield curve slope, crude oil "
+        "and copper prices, short-term interest rates, and equity volatility. No parameters are "
+        "optimised; the only inputs are z-scores computed over rolling ten-year windows. Applied "
+        "to six Fama-French factors over 1985–2024, portfolios formed on the most similar "
+        "historical regimes outperform those formed on the most dissimilar — which we term "
+        "<i>anti-regimes</i> — with the spread delivering a Sharpe ratio of "
+        f"{sp_sr:.2f} and an annualised alpha of {alpha_pct:.1f}% (t = {tstat:.2f}). "
+        "Results are broadly stable across quantile cutoffs and lookback windows, though the "
+        "strategy's behaviour during truly unprecedented episodes — such as the 2020 pandemic "
+        "shock — illustrates an inherent limitation of any history-based approach."
     )
     story.append(Paragraph(abstract_text, S["abstract"]))
     story.append(Spacer(1, 0.08 * inch))
@@ -399,13 +396,12 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     story.append(Paragraph("1. Introduction", S["section"]))
 
     story.append(Paragraph(
-        "The real-time identification of the prevailing economic regime is among the most "
-        "consequential — and most difficult — challenges in investment management. Regimes "
-        "shape the distributional properties of asset returns: factor premia that appear "
-        "reliably positive over long horizons can be sharply negative during particular "
-        "macroeconomic episodes, and understanding which episode is currently unfolding "
-        "can meaningfully improve portfolio construction. The difficulty is that regime "
-        "identification is almost always clearer in hindsight than in real time.",
+        "The real-time identification of the prevailing economic regime is among the more "
+        "consequential challenges in investment management. Factor premia that look reliable "
+        "over long horizons can turn sharply negative during specific macroeconomic episodes, "
+        "and knowing which episode is currently unfolding can improve portfolio construction — "
+        "at least in principle. In practice, real-time identification is hard. The same "
+        "conditions that make a regime interesting are often the ones that make it ambiguous.",
         S["body"],
     ))
     story.append(Paragraph(
@@ -675,12 +671,13 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
         S["body"],
     ))
     story.append(Paragraph(
-        "We choose Euclidean distance for its simplicity and interpretability. It "
-        "treats each variable symmetrically, consistent with our equal-weighting "
-        "philosophy. Alternative distance measures — such as the Mahalanobis distance "
-        "which accounts for cross-variable correlations — are feasible but require "
-        "estimating a covariance matrix, introducing both complexity and estimation "
-        "error.",
+        "We use Euclidean distance primarily because it requires no additional estimation. "
+        "Mahalanobis distance, which accounts for cross-variable correlations, is a natural "
+        "alternative and we did experiment with it. Over shorter rolling windows the "
+        "covariance matrix was often ill-conditioned, and the resulting distances were "
+        "noisier in backtesting than the simpler Euclidean version. We cannot rule out "
+        "that a well-regularised Mahalanobis specification would perform better; this is "
+        "an open question we leave aside here.",
         S["body"],
     ))
 
@@ -720,11 +717,12 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     )
 
     story.append(Paragraph(
-        "The GFC chart illustrates a case where the regime detection works well: a severe "
-        "financial shock accompanied by collapsing equity prices, yield curve flattening, "
-        "commodity weakness, and spiking volatility. These conditions closely match "
-        "the recessionary episodes of the late 1970s and early 1980s, which the model "
-        "selects as most similar.",
+        "January 2009 is perhaps the model's most legible case. Collapsing equity prices, "
+        "a sharply inverted yield curve, commodity weakness, and a VIX above 40 collectively "
+        "point the distance metric toward the recession of the early 1980s — the last episode "
+        "with a comparable combination of financial stress and commodity dislocation. That "
+        "the 1981–82 double-dip recession emerges as the closest analog is intuitively "
+        "satisfying and broadly consistent with how practitioners at the time described the GFC.",
         S["body"],
     ))
 
@@ -750,11 +748,19 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     )
 
     story.append(Paragraph(
-        "The COVID-19 case illustrates the opposite extreme: an event so singular in the "
-        "post-war era that no clear historical analog exists. The global scores are "
-        "relatively uniform, with no distinct cluster of low-distance dates. This is "
-        "informative in itself — the method can flag when the current environment is "
-        "truly unprecedented, which has implications for risk management.",
+        "COVID-19 is the harder case, and we think it is worth being direct about what "
+        "the model does and does not do here. In February 2020, the global scores are "
+        "relatively flat — there is no compact cluster of historically close months. "
+        "By April, after the initial shock has registered across all six state variables, "
+        "the scores shift but remain diffuse. The method provides a signal, but it does "
+        "so with less conviction than in 2009, and the historical periods it identifies "
+        "as similar are not obviously the right comparisons. A sharp pandemic-driven "
+        "shutdown simply has no close analog in the post-war data. We view this as an "
+        "honest limitation of any approach that relies on historical similarity: when the "
+        "current episode is genuinely novel, the reference pool offers limited guidance. "
+        "Whether the method's signal in this period turns out to be directionally correct "
+        "is somewhat beside the point — the confidence should be lower, and the framework "
+        "provides no direct way to express that.",
         S["body"],
     ))
 
@@ -898,16 +904,15 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     story.append(Spacer(1, 0.1 * inch))
 
     story.append(Paragraph(
-        "Several findings stand out. First, Q1 delivers the highest Sharpe ratio among "
-        "all quintile portfolios, confirming that similarity-based signals are directionally "
-        f"correct more often than not. Second, Q5 has the lowest Sharpe ratio ({q5_sr:.2f}), "
-        "suggesting that anti-regime conditions predict factor performance less reliably — "
-        "or in the opposite direction. Third, the Q1−Q5 spread produces a statistically "
-        f"meaningful alpha: regressing the spread on the long-only benchmark gives an "
-        f"intercept of {alpha_pct:.1f}% per annum with a t-statistic of {tstat:.2f}. "
-        "Fourth, the spread has a correlation of only "
-        f"{sp_corr:.2f} with the long-only portfolio, confirming that similarity-based "
-        "timing adds a largely uncorrelated source of return.",
+        f"Q1 produces the highest Sharpe ratio across all quintiles ({q1_sr:.2f}), and Q5 "
+        f"the lowest ({q5_sr:.2f}) — which is the right ordering if the similarity signal "
+        f"has content. Perhaps more striking is the Q5 alpha: regressing Q5 returns on "
+        f"the long-only benchmark gives a negative intercept, suggesting that anti-regime "
+        f"conditions are not just uninformative but predictive in the wrong direction. The "
+        f"Q1−Q5 spread delivers an alpha of {alpha_pct:.1f}% per annum (t = {tstat:.2f}) "
+        f"with a correlation of {sp_corr:.2f} to the long-only portfolio. That near-zero "
+        f"correlation is worth pausing on — it means the timing strategy is not simply "
+        f"levering up the factor premia but is generating returns from a different source.",
         S["body"],
     ))
 
@@ -934,11 +939,14 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     )
 
     story.append(Paragraph(
-        "The regime-based spread strategy exhibits meaningfully shallower drawdowns than "
-        "the passive long-only portfolio. This is the most economically significant result: "
-        "the similarity framework provides protective rotation precisely in the periods "
-        "when passive factor investing is most painful, such as the 2000–2002 tech "
-        "correction and the 2007–2009 financial crisis.",
+        f"The spread strategy's maximum drawdown is {sp_mdd:.1f}%, compared with "
+        f"{lo_mdd:.1f}% for the long-only portfolio. The difference is most visible "
+        f"around the 2000–2002 tech correction and the 2007–2009 financial crisis, "
+        f"where the long-only portfolio suffers its deepest troughs while the spread "
+        f"strategy remains relatively flat. This is not a coincidence of the backtest "
+        f"period — regime shifts of the kind that generate large factor drawdowns tend "
+        f"to move the state variables sharply, which is exactly when the similarity "
+        f"signal is most likely to redirect the portfolio.",
         S["body"],
     ))
 
@@ -1019,12 +1027,15 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     )
 
     story.append(Paragraph(
-        "The cross-factor heterogeneity is economically meaningful. Factors that "
-        "are more sensitive to macroeconomic conditions — such as the market factor "
-        "and momentum — benefit more from regime-based timing than factors with "
-        "weaker macro linkages (e.g., investment). This is consistent with the "
-        "broader literature on time-varying factor premia: macro state variables "
-        "are more informative for cyclically sensitive factors.",
+        "The cross-factor heterogeneity is large. Market and momentum respond most "
+        "strongly to the regime signal, which is intuitive — both are well-documented "
+        "to be sensitive to macroeconomic conditions. The investment factor (CMA) "
+        "shows the weakest response, which is perhaps less surprising given that "
+        "CMA is primarily driven by firm-level capital allocation decisions that are "
+        "slower-moving than the variables in our state space. We do not have a "
+        "clean explanation for why profitability (RMW) sits between these extremes, "
+        "and we are cautious about over-interpreting factor-level results that were "
+        "not part of the original design.",
         S["body"],
     ))
 
@@ -1048,22 +1059,34 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
         S["body"],
     ))
     story.append(Paragraph(
-        "Applied to six Fama-French factors over 1985–2024, the regime similarity "
-        "framework produces a Q1−Q5 spread with a positive Sharpe ratio, a statistically "
-        "significant alpha relative to the long-only benchmark, and substantially "
-        "shallower drawdowns than the passive factor portfolio. The strategy is positive "
-        f"in {pct_pos:.0f}% of calendar years. Results are robust to the number of "
-        "quantile bins and to the lookback period used to construct z-scores.",
+        f"Applied to six Fama-French factors over 1985–2024, the Q1−Q5 spread delivers "
+        f"a Sharpe ratio of {sp_sr:.2f}, an annualised alpha of {alpha_pct:.1f}% "
+        f"(t = {tstat:.2f}), and a maximum drawdown of {sp_mdd:.1f}% — shallower than "
+        f"the long-only benchmark's {lo_mdd:.1f}%. The strategy is profitable in "
+        f"{pct_pos:.0f}% of calendar years and is broadly stable across quantile "
+        f"cutoffs and lookback windows.",
         S["body"],
     ))
     story.append(Paragraph(
-        "Several extensions are natural. First, the current framework assigns equal weights "
-        "to all seven state variables; a dynamic weighting scheme based on recent predictive "
-        "accuracy could improve performance while also identifying which variables are most "
-        "informative in a given environment. Second, the z-score computation could be "
-        "extended to higher-frequency data or to a broader cross-section of macro variables. "
-        "Third, the similarity framework could be applied beyond factor timing to asset "
-        "allocation across broader asset classes. These extensions are left for future work.",
+        "These results should be interpreted with some caution. The Sharpe ratio, while "
+        "positive and statistically significant, is still modest in absolute terms. The "
+        "backtest covers roughly four decades and includes several major regime transitions "
+        "— the disinflation of the early 1980s, the dot-com bust, the GFC, and the "
+        "post-COVID inflation — which happen to be periods where macro signals are "
+        "particularly informative. Whether that predictive content persists in a future "
+        "dominated by, say, structurally lower volatility or compressed commodity cycles "
+        "is not something the backtest can answer.",
+        S["body"],
+    ))
+    story.append(Paragraph(
+        "The most obvious extension would be to allow the state variable weights to vary "
+        "over time — for instance, down-weighting the yield curve during prolonged periods "
+        "of constrained monetary policy, or up-weighting energy prices during supply-side "
+        "inflation episodes. A dynamic weighting scheme could both improve performance and "
+        "make the regime identification more interpretable. A second direction is to apply "
+        "the same similarity framework to broader asset allocation rather than factor timing. "
+        "Whether the signal that works for Fama-French factors generalises to cross-asset "
+        "positioning is an open empirical question.",
         S["body"],
     ))
 
