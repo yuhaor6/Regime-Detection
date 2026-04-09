@@ -66,8 +66,7 @@ regime/
 │   ├── similarity.py        # Distance matrix and EWMA regime-shift detection
 │   ├── backtest.py          # Signal construction and portfolio building
 │   ├── evaluation.py        # Performance metrics
-│   ├── exhibits.py          # All figures (Exhibits 1–13, A1–A2)
-│   └── paper_writer.py      # PDF paper generation (ReportLab)
+│   └── exhibits.pyy         # All figures (Exhibits 1–13, A1–A2)
 ├── figures/                 # Output figures (PNG + PDF)
 ├── paper/                   # Compiled PDF
 └── data/                    # Pickle cache (git-ignored)
