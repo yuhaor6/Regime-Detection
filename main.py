@@ -80,16 +80,27 @@ def main(fred_key=None, force_download=False):
     print("\nCross-correlation matrix:")
     print(corr_mat.round(2).to_string())
 
+    # The similarity engine uses 6 variables. stock_bond_corr is excluded because
+    # its z-score only becomes available from 1975 (limiting the reference pool to
+    # 603 months) and because our duration-approximated bond returns make the series
+    # noisy relative to actual Treasury total-return data. Keeping 6 variables
+    # extends the reference pool back to 1964 (736 months), which materially improves
+    # signal quality.
+    SIM_COLS = [c for c in state_vars.columns if c != "stock_bond_corr"]
+    _, winsor_sim = transform_all(state_vars[SIM_COLS])
+    print(f"\n  Similarity variables ({len(SIM_COLS)}): {SIM_COLS}")
+    print(f"  Reference pool start: {winsor_sim.dropna(how='any').index[0].date()}")
+
     print("\n=== Stage 3: Similarity Engine ===")
     print("  Computing distance matrix (may take ~30s) ...")
     dist_matrix = _cached("dist_matrix",
-                           lambda: compute_distance_matrix(winsor_df, exclude_recent=36),
+                           lambda: compute_distance_matrix(winsor_sim, exclude_recent=36),
                            force=force_download)
     print(f"  Distance matrix shape: {dist_matrix.shape}")
 
     print("  Computing EWMA regime shift indicators ...")
     ewma_df = _cached("ewma_df",
-                       lambda: compute_ewma_regime_shift(winsor_df),
+                       lambda: compute_ewma_regime_shift(winsor_sim),
                        force=force_download)
 
     print("\n=== Stage 4: Backtest ===")
@@ -125,7 +136,7 @@ def main(fred_key=None, force_download=False):
 
     print("  Lookback robustness ...")
     spread_by_lb = _cached("spread_by_lb",
-                             lambda: robustness_lookback(state_vars, ff),
+                             lambda: robustness_lookback(state_vars[SIM_COLS], ff),
                              force=force_download)
 
     print("\n=== Stage 7: Generating Exhibits ===")
