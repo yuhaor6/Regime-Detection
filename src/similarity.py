@@ -15,16 +15,21 @@ def compute_distance_matrix(winsor_df, exclude_recent=36):
     """
     Full T x T distance matrix with a recency exclusion mask.
     dist[T, i] is NaN when i is within the last `exclude_recent` months of T.
+
+    Only months where ALL state variables are non-NaN are included, so every
+    pairwise distance is computed over the same number of dimensions and is
+    directly comparable.
     """
-    mat = winsor_df.dropna(how="all").values
-    dates = winsor_df.dropna(how="all").index
+    # Require all variables to be present — partial rows produce distances on
+    # fewer dimensions, making them artificially close to everything.
+    mat = winsor_df.dropna(how="any").values
+    dates = winsor_df.dropna(how="any").index
     N = len(dates)
 
     # vectorised pairwise: ||a-b||^2 = ||a||^2 + ||b||^2 - 2 a.b
-    sq_norms = np.nansum(mat ** 2, axis=1)
-    mat_nz   = np.where(np.isnan(mat), 0, mat)
-    dots     = mat_nz @ mat_nz.T
-    sq_dist  = np.maximum(sq_norms[:, None] + sq_norms[None, :] - 2 * dots, 0.0)
+    sq_norms  = (mat ** 2).sum(axis=1)
+    dots      = mat @ mat.T
+    sq_dist   = np.maximum(sq_norms[:, None] + sq_norms[None, :] - 2 * dots, 0.0)
     dist_full = np.sqrt(sq_dist)
 
     idx   = np.arange(N)
@@ -56,13 +61,12 @@ def compute_ewma_regime_shift(winsor_df, lookbacks_months=None):
     if lookbacks_months is None:
         lookbacks_months = [12, 24, 36, 48]
 
-    mat = winsor_df.dropna(how="all").values
-    dates = winsor_df.dropna(how="all").index
+    mat = winsor_df.dropna(how="any").values
+    dates = winsor_df.dropna(how="any").index
     N = len(dates)
 
-    sq_norms  = np.nansum(mat ** 2, axis=1)
-    mat_nz    = np.where(np.isnan(mat), 0, mat)
-    dots      = mat_nz @ mat_nz.T
+    sq_norms  = (mat ** 2).sum(axis=1)
+    dots      = mat @ mat.T
     dist_full = np.sqrt(np.maximum(sq_norms[:, None] + sq_norms[None, :] - 2 * dots, 0.0))
 
     results = {}
