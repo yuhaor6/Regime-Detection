@@ -28,7 +28,7 @@ PAGE_W, PAGE_H = letter
 MARGIN = 1.0 * inch
 TEXT_W = PAGE_W - 2 * MARGIN
 
-NAVY   = HexColor("#1f3864")
+NAVY   = colors.black          # titles and section heads: plain black
 ACCENT = HexColor("#1f5fa6")
 LIGHT  = HexColor("#f4f6fb")
 
@@ -173,11 +173,14 @@ def _img(path, width, fig_dir="figures"):
 
 
 def _exhibit_block(title, caption, img_path, styles, width=6.2, fig_dir="figures"):
-    return [
+    """Return exhibit as a KeepTogether block so title never orphans from image."""
+    inner = [
+        Spacer(1, 0.08 * inch),
         Paragraph(title, styles["exhibit_title"]),
         _img(img_path, width=width, fig_dir=fig_dir),
         Paragraph(caption, styles["caption"]),
     ]
+    return [KeepTogether(inner)]
 
 
 def _hr(width=TEXT_W, thickness=0.5):
@@ -191,6 +194,15 @@ def _make_footer(canvas, doc):
     canvas.setFont("Times-Roman", 9)
     canvas.setFillColor(colors.HexColor("#666666"))
     canvas.drawCentredString(PAGE_W / 2, 0.55 * inch, str(doc.page))
+    # Acknowledgment footnote on first page only
+    if doc.page == 1:
+        canvas.setFont("Times-Roman", 8)
+        canvas.setFillColor(colors.HexColor("#444444"))
+        footnote = (
+            "\u2020 I am grateful to Prof. André Sztutman for his comments "
+            "and feedback on this project."
+        )
+        canvas.drawString(MARGIN, 0.75 * inch, footnote)
     canvas.restoreState()
 
 
@@ -216,7 +228,8 @@ def _perf_table(portfolios, lo_returns, styles):
     corr_row.append("—")
 
     data = [headers, sr_row, corr_row]
-    col_widths = [1.3 * inch] + [0.82 * inch] * 7
+    # Total must fit TEXT_W = 6.5 in: label 1.1in + 6 cols × 0.72in + 2 cols × 0.72in = 6.5in
+    col_widths = [1.1 * inch] + [0.77 * inch] * 7
 
     tbl = Table(data, colWidths=col_widths)
     tbl.setStyle(TableStyle([
@@ -349,7 +362,7 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     story.append(Spacer(1, 0.15 * inch))
     story.append(_hr())
     story.append(Spacer(1, 0.1 * inch))
-    story.append(Paragraph("Yuhao Ren", S["author"]))
+    story.append(Paragraph("Yuhao Ren\u2020", S["author"]))
     story.append(Paragraph(f"April 2026", S["date"]))
     story.append(Spacer(1, 0.25 * inch))
 
@@ -716,12 +729,21 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
     ))
 
     story += _exhibit_block(
-        "Exhibit 7. Historical similarity during the COVID-19 crisis — February and April 2020",
-        "Global similarity scores for February 2020 (top) and April 2020 (bottom). "
-        "The model finds no clearly analogous historical episode — consistent with the "
-        "unprecedented nature of a pandemic-driven economic shutdown — yet the distributional "
-        "signal still contains information that can guide factor positioning.",
+        "Exhibit 7a. Historical similarity during the COVID-19 crisis — February 2020",
+        "Global similarity score for February 2020. The model finds no clearly analogous "
+        "historical episode at the onset of the pandemic.",
         "exhibit7_covid_february_2020.png",
+        S,
+        width=6.2,
+        fig_dir=fig_dir,
+    )
+    story += _exhibit_block(
+        "Exhibit 7b. Historical similarity during the COVID-19 crisis — April 2020",
+        "Global similarity score for April 2020, after the initial shock. "
+        "The distribution of scores remains diffuse — consistent with the unprecedented "
+        "nature of a pandemic-driven economic shutdown — yet still contains directional "
+        "information for factor positioning.",
+        "exhibit7_covid_april_2020.png",
         S,
         width=6.2,
         fig_dir=fig_dir,
@@ -819,7 +841,7 @@ def build_paper(portfolios, lo_returns, spread, spread_scaled,
               "go long if the average is positive, short if negative."],
         ["4", "Repeat for quintiles Q2–Q5. Aggregate the six factor positions equally within each quintile."],
     ]
-    s2_col_widths = [0.4*inch, 5.8*inch]
+    s2_col_widths = [0.4*inch, 6.1*inch]
     s2 = Table(steps2_data, colWidths=s2_col_widths)
     s2.setStyle(TableStyle([
         ("FONTNAME",    (0, 0), (-1, 0),  "Times-Bold"),
